@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center min-h-screen p-4">
+  <div class="bg-white bg-opacity-80 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-lg w-full">
+    <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-6">Token Calculator</h1>
+    <div class="space-y-6">
+      <!-- Nominal Top-up Input with formatting -->
+      <div>
+        <label for="nominal" class="block text-gray-700 font-medium mb-2">Nominal Top-up (IDR)</label>
+        <input
+          id="nominal"
+          type="text"
+          placeholder="30.000"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
+      <!-- Markup Selector: preset + custom -->
+      <div>
+        <label for="presetMarkup" class="block text-gray-700 font-medium mb-2">Markup (%)</label>
+        <div class="flex space-x-4 items-center">
+          <select id="presetMarkup" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="15">15%</option>
+            <option value="custom">Custom</option>
+          </select>
+          <input
+            id="customMarkup"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Masukkan %"
+            class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 hidden"
+          />
+        </div>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        id="calculateBtn"
+        class="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 transition"
+      >
+        Calculate
+      </button>
+
+      <!-- Result Display -->
+      <div id="result" class="mt-4 text-center text-2xl font-semibold text-gray-800"></div>
+    </div>
+  </div>
+
+  <script>
+    const pricePerToken = 0.026; // IDR per token
+
+    // Format input value with thousand separators
+    function formatNominal(value) {
+      const num = value.replace(/\D/g, '');
+      return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Parse formatted nominal back to number
+    function parseNominal(value) {
+      return parseFloat(value.replace(/\./g, '')) || 0;
+    }
+
+    document.getElementById('nominal').addEventListener('input', (e) => {
+      const cursorPos = e.target.selectionStart;
+      e.target.value = formatNominal(e.target.value);
+      e.target.setSelectionRange(cursorPos, cursorPos);
+    });
+
+    // Toggle custom markup input
+    document.getElementById('presetMarkup').addEventListener('change', (e) => {
+      const custom = document.getElementById('customMarkup');
+      custom.classList.toggle('hidden', e.target.value !== 'custom');
+      if (e.target.value !== 'custom') custom.value = '';
+    });
+
+    // Utility: format tokens with separators and 2 decimals
+    function formatTokens(val) {
+      return val
+        .toFixed(2)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // Main calculation
+    function calculateTokens() {
+      const nominal = parseNominal(document.getElementById('nominal').value);
+      const preset = document.getElementById('presetMarkup').value;
+      const markupPercent = preset === 'custom'
+        ? parseFloat(document.getElementById('customMarkup').value) || 0
+        : parseFloat(preset);
+
+      const tokens = (nominal / pricePerToken) * (1 + markupPercent / 100);
+      document.getElementById('result').textContent = `${formatTokens(tokens)} tokens`;
+    }
+
+    document.getElementById('calculateBtn').addEventListener('click', calculateTokens);
+  </script>
+</body>
+</html>
